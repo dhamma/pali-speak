@@ -1,0 +1,64 @@
+<html>
+<style>
+    @font-face {
+        font-family:"ProvidentPali";
+        src: local("ProvidentPali"), url("ProvidentPaliSegoe.otf") 
+    }
+
+    .playing {border-bottom:2px solid brown;color:red;transition: color  0.5s}
+    .stopping {border-bottom:none;color:black;transition: color 0.5s}
+    #input {font: 2rem "ProvidentPali"}
+    #output {height:4em; ; vertical-align: baseline;display: inline-block;font: 2em "ProvidentPali";}
+</style>
+<script src="pali-speak.js"></script>
+    <script defer>
+        const test='';
+
+        function playogg(url) {
+            return new Promise(function(resolve, reject) {   // return a promise
+                var audio = new Audio();                     // create audio wo/ src
+                audio.preload = "auto";                      // intend to play through
+                audio.autoplay = true;                       // autoplay when loaded
+                audio.onerror = resolve;                      // on error, reject
+                audio.onended = resolve;                     // when done, resolve
+                audio.src = url
+            });
+        }
+
+        async function  play() {
+
+            const input=document.querySelector("#input")
+            const output=document.querySelector("#output")
+            const syls=paliSpeak.syllablify(input.value);
+
+            output.innerHTML='';
+
+            for (let i=0;i<syls.length;i++) {
+                const ele=document.createElement('span');
+                ele.innerText=syls[i][1]||' ';
+                ele.id='syl'+i;
+                output.appendChild(ele);
+            }
+
+            for (let i=0;i<syls.length;i++) {
+                if(i)document.querySelector('#syl'+(i-1)).className='stopping';
+                document.querySelector('#syl'+i).className='playing';
+                if (!syls[i]||!syls[i][0].trim()) await new Promise( resolve=>setTimeout(resolve,150));
+                else await playogg('ogg/'+syls[i][0]+'.ogg')
+            }
+
+            document.querySelector('#syl'+(syls.length-1)).className='stopping';
+        }
+    </script>
+
+<textarea id='input' cols=40 rows=10>
+    evM mE sUtM – ekM smyM BgvA sAvtVTIyM vIhrtI jEtvnE anATpINVFIksVs aArAmE.
+</textarea>
+
+<button onclick="play()">play</button>
+<div id='output'>
+
+</div>
+
+
+</html>
